@@ -200,7 +200,7 @@ func (tx *Transaction) To() *common.Address {
 
 // From returns the sender address of the transaction.
 // It returns nil if signature is invalid or nil.
-func (tx *Transaction) From() (from *common.Address) {
+func (tx *Transaction) From() *common.Address {
 	if tx.data.V != nil {
 		// make a best guess about the signer and use that to derive the sender
 		signer := deriveSigner(tx.data.V)
