@@ -476,9 +476,9 @@ func (ec *Client) SendTransaction(ctx context.Context, tx *types.Transaction) er
 	return ec.c.CallContext(ctx, nil, "eth_sendRawTransaction", common.ToHex(data))
 }
 
-// TxPoolContent returns the current contents of the pending pool.
-// NOTE: Unmarshalling the result into type rpcTransaction loses all
-// transaction data except (blockNumber, blockHash, from).
+// TxPoolContent returns the current contents of the pending pool. The return
+// value is a map of the form:
+// { "pending"|"queued": { <sender_addr>: { <nonce>: Transaction }}}
 func (ec *Client) TxPoolContent(ctx context.Context) (map[string]map[string]map[string]*types.Transaction, error) {
 	var res map[string]map[string]map[string]*types.Transaction
 	err := ec.c.CallContext(ctx, &res, "txpool_content")
