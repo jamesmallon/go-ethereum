@@ -23,7 +23,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"gopkg.in/fatih/set.v0"
 )
 
@@ -162,4 +164,13 @@ func (bn *BlockNumber) UnmarshalJSON(data []byte) error {
 
 func (bn BlockNumber) Int64() int64 {
 	return (int64)(bn)
+}
+
+// Return types for RPC methods as defined in github.com/ethereum/wiki/wiki/JSON-RPC
+type Transaction struct {
+	types.Transaction
+	BlockHash        common.Hash    `json:"blockHash"`
+	BlockNumber      *string        `json:"blockNumber"`
+	TransactionIndex *int           `json:"transactionIndex"`
+	From             common.Address `json:"from"`
 }
