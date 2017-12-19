@@ -138,8 +138,8 @@ func (ec *Client) getBlock(ctx context.Context, method string, args ...interface
 	// Fill the sender cache of transactions in the block.
 	txs := make([]*types.Transaction, len(body.Transactions))
 	for i, tx := range body.Transactions {
-		setSenderFromServer(tx.tx, tx.From, body.Hash)
-		txs[i] = tx.tx
+		setSenderFromServer(tx.Tx, tx.From, body.Hash)
+		txs[i] = tx.Tx
 	}
 	return types.NewBlockWithHeader(head).WithBody(txs, uncles), nil
 }
@@ -166,7 +166,7 @@ func (ec *Client) HeaderByNumber(ctx context.Context, number *big.Int) (*types.H
 }
 
 type RPCTransaction struct {
-	tx *types.Transaction
+	Tx *types.Transaction
 	txExtraInfo
 }
 
@@ -177,7 +177,7 @@ type txExtraInfo struct {
 }
 
 func (tx *RPCTransaction) UnmarshalJSON(msg []byte) error {
-	if err := json.Unmarshal(msg, &tx.tx); err != nil {
+	if err := json.Unmarshal(msg, &tx.Tx); err != nil {
 		return err
 	}
 	return json.Unmarshal(msg, &tx.txExtraInfo)
@@ -191,10 +191,10 @@ func (ec *Client) TransactionByHash(ctx context.Context, hash common.Hash) (tx *
 		return nil, err
 	} else if json == nil {
 		return nil, ethereum.NotFound
-	} else if _, r, _ := json.tx.RawSignatureValues(); r == nil {
+	} else if _, r, _ := json.Tx.RawSignatureValues(); r == nil {
 		return nil, fmt.Errorf("server returned transaction without signature")
 	}
-	setSenderFromServer(json.tx, json.From, json.BlockHash)
+	setSenderFromServer(json.Tx, json.From, json.BlockHash)
 	return json, nil
 }
 
@@ -237,12 +237,12 @@ func (ec *Client) TransactionInBlock(ctx context.Context, blockHash common.Hash,
 	if err == nil {
 		if json == nil {
 			return nil, ethereum.NotFound
-		} else if _, r, _ := json.tx.RawSignatureValues(); r == nil {
+		} else if _, r, _ := json.Tx.RawSignatureValues(); r == nil {
 			return nil, fmt.Errorf("server returned transaction without signature")
 		}
 	}
-	setSenderFromServer(json.tx, json.From, json.BlockHash)
-	return json.tx, err
+	setSenderFromServer(json.Tx, json.From, json.BlockHash)
+	return json.Tx, err
 }
 
 // TransactionReceipt returns the receipt of a transaction by transaction hash.
