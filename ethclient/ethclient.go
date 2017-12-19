@@ -72,7 +72,7 @@ func (ec *Client) BlockByNumber(ctx context.Context, number *big.Int) (*types.Bl
 
 type rpcBlock struct {
 	Hash         common.Hash      `json:"hash"`
-	Transactions []rpcTransaction `json:"transactions"`
+	Transactions []RPCTransaction `json:"transactions"`
 	UncleHashes  []common.Hash    `json:"uncles"`
 }
 
@@ -160,7 +160,7 @@ func (ec *Client) HeaderByNumber(ctx context.Context, number *big.Int) (*types.H
 	return head, err
 }
 
-type rpcTransaction struct {
+type RPCTransaction struct {
 	tx *types.Transaction
 	txExtraInfo
 }
@@ -171,7 +171,7 @@ type txExtraInfo struct {
 	From        common.Address
 }
 
-func (tx *rpcTransaction) UnmarshalJSON(msg []byte) error {
+func (tx *RPCTransaction) UnmarshalJSON(msg []byte) error {
 	if err := json.Unmarshal(msg, &tx.tx); err != nil {
 		return err
 	}
@@ -179,18 +179,18 @@ func (tx *rpcTransaction) UnmarshalJSON(msg []byte) error {
 }
 
 // TransactionByHash returns the transaction with the given hash.
-func (ec *Client) TransactionByHash(ctx context.Context, hash common.Hash) (tx *types.Transaction, isPending bool, err error) {
-	var json *rpcTransaction
+func (ec *Client) TransactionByHash(ctx context.Context, hash common.Hash) (tx *RPCTransaction, err error) {
+	var json *RPCTransaction
 	err = ec.c.CallContext(ctx, &json, "eth_getTransactionByHash", hash)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	} else if json == nil {
-		return nil, false, ethereum.NotFound
+		return nil, ethereum.NotFound
 	} else if _, r, _ := json.tx.RawSignatureValues(); r == nil {
-		return nil, false, fmt.Errorf("server returned transaction without signature")
+		return nil, fmt.Errorf("server returned transaction without signature")
 	}
 	setSenderFromServer(json.tx, json.From, json.BlockHash)
-	return json.tx, json.BlockNumber == nil, nil
+	return json, nil
 }
 
 // TransactionSender returns the sender address of the given transaction. The transaction
@@ -227,7 +227,7 @@ func (ec *Client) TransactionCount(ctx context.Context, blockHash common.Hash) (
 
 // TransactionInBlock returns a single transaction at index in the given block.
 func (ec *Client) TransactionInBlock(ctx context.Context, blockHash common.Hash, index uint) (*types.Transaction, error) {
-	var json *rpcTransaction
+	var json *RPCTransaction
 	err := ec.c.CallContext(ctx, &json, "eth_getTransactionByBlockHashAndIndex", blockHash, hexutil.Uint64(index))
 	if err == nil {
 		if json == nil {
