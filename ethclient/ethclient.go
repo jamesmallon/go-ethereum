@@ -52,8 +52,9 @@ func NewClient(c *rpc.Client) *Client {
 }
 
 // Close closes the underlying RPC connection.
-func (c *Client) Close() {
+func (c *Client) Close() error {
 	c.c.Close()
+	return nil
 }
 
 // Blockchain Access
